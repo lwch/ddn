@@ -1,0 +1,3 @@
+#!/bin/sh
+go build -o bin/discover code/discover/*.go
+go build -o bin/downloader code/downloader/*.go
