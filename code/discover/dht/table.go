@@ -11,7 +11,7 @@ import (
 
 type bucket struct {
 	sync.RWMutex
-	prefix hashType
+	prefix Hash
 	nodes  *list.List
 	leaf   [2]*bucket
 	bits   int
@@ -54,7 +54,7 @@ func loopSplit(bk *bucket, k, maxBits int) {
 	}
 }
 
-func (bk *bucket) exists(id hashType) bool {
+func (bk *bucket) exists(id Hash) bool {
 	for n := bk.nodes.Front(); n != nil; n = n.Next() {
 		if bytes.Equal(n.Value.(*node).id[:], id[:]) {
 			return true
@@ -63,7 +63,7 @@ func (bk *bucket) exists(id hashType) bool {
 	return false
 }
 
-func (bk *bucket) search(id hashType) *bucket {
+func (bk *bucket) search(id Hash) *bucket {
 	if bk.leaf[0] == nil && bk.leaf[1] == nil {
 		return bk
 	}
@@ -74,7 +74,7 @@ func (bk *bucket) split(maxBits int) {
 	if bk.bits >= maxBits {
 		return
 	}
-	var id hashType
+	var id Hash
 	copy(id[:], bk.prefix[:])
 	if bk.leaf[0] == nil {
 		bk.leaf[0] = newBucket(id, bk.bits+1)
@@ -105,7 +105,7 @@ func (bk *bucket) split(maxBits int) {
 	bk.nodes = nil
 }
 
-func (bk *bucket) equalBits(id hashType) bool {
+func (bk *bucket) equalBits(id Hash) bool {
 	bt := bk.bits / 8
 	bit := bk.bits % 8
 	for i := 0; i < bt; i++ {
@@ -131,7 +131,7 @@ func (bk *bucket) getNodes() []*node {
 	return ret
 }
 
-func newBucket(prefix hashType, bits int) *bucket {
+func newBucket(prefix Hash, bits int) *bucket {
 	return &bucket{
 		prefix: prefix,
 		nodes:  list.New(),
@@ -215,7 +215,7 @@ func (t *table) findAddr(addr net.Addr) *node {
 	return data
 }
 
-func (t *table) findID(id hashType) *node {
+func (t *table) findID(id Hash) *node {
 	t.RLock()
 	bk := t.root.search(id)
 	t.RUnlock()
@@ -228,7 +228,7 @@ func (t *table) findID(id hashType) *node {
 	return nil
 }
 
-func (t *table) neighbor(id hashType) []*node {
+func (t *table) neighbor(id Hash) []*node {
 	t.RLock()
 	bk := t.root.search(id)
 	t.RUnlock()

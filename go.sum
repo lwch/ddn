@@ -1,3 +1,5 @@
+github.com/lwch/bencode v1.0.0 h1:JgBX0GEVcYl23IVnyVvQNOQHhCV0Htmh+YOmD2HhA40=
+github.com/lwch/bencode v1.0.0/go.mod h1:1hW52J7ysJmG7Kv8HyaZTqMhFtSrB8ztr/cJFzspYeY=
 github.com/lwch/logging v0.0.0-20210528090125-a154917d90c6 h1:R52s6I/vW1NfNaJdY+Yr/ivkiFicouKmK0v3nvDQh4s=
 github.com/lwch/logging v0.0.0-20210528090125-a154917d90c6/go.mod h1:aXQui5bsF/d4I+z6szuiBWY5m4y9t6pyZ2Q/sLgkBBg=
 github.com/lwch/runtime v0.0.0-20190520054850-8c97e19e0c6d h1:Xg+zzPtvX22DaoJD5Bp0tqPdB8gn5WypghIJ4fluqiQ=

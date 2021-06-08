@@ -5,25 +5,25 @@ import (
 	"fmt"
 )
 
-type hashType [20]byte
+type Hash [20]byte
 
-var emptyHash hashType
+var emptyHash Hash
 
-func (hash hashType) String() string {
+func (hash Hash) String() string {
 	return fmt.Sprintf("%x", [20]byte(hash))
 }
 
-func (hash hashType) raw() [20]byte {
+func (hash Hash) raw() [20]byte {
 	return [20]byte(hash)
 }
 
-func (hash hashType) equal(h hashType) bool {
+func (hash Hash) equal(h Hash) bool {
 	a := hash.raw()
 	b := h.raw()
 	return bytes.Equal(a[:], b[:])
 }
 
-func (hash hashType) bit(n int) byte {
+func (hash Hash) bit(n int) byte {
 	if n < 0 || n >= len(hash)*8 {
 		panic(fmt.Errorf("out of range 0~%d[%d]", len(hash)*8-1, n))
 	}
