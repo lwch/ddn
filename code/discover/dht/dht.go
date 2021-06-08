@@ -28,7 +28,7 @@ func New(port uint16, minNodes, maxNodes int, addrs []net.UDPAddr) (*DHT, error)
 		local:    data.RandID(),
 	}
 	for _, addr := range addrs {
-		n := newBootstrapNode(addr)
+		n := newBootstrapNode(dht, addr)
 		dht.tb.add(n)
 	}
 	var err error

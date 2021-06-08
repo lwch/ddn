@@ -20,7 +20,7 @@ func main() {
 		runtime.Assert(err)
 		bootstrapAddrs = append(bootstrapAddrs, *addr)
 	}
-	net, err := dht.New(6881, 1000, 10000, bootstrapAddrs)
+	net, err := dht.New(6882, 1000, 10000, bootstrapAddrs)
 	runtime.Assert(err)
 	defer net.Close()
 	const str = "9f292c93eb0dbdd7ff7a4aa551aaa1ea7cafe004" // debian-10.9.0-amd64-netinst.iso

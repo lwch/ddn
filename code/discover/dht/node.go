@@ -24,8 +24,9 @@ func newNode(dht *DHT, id Hash, addr net.UDPAddr) *node {
 	}
 }
 
-func newBootstrapNode(addr net.UDPAddr) *node {
+func newBootstrapNode(dht *DHT, addr net.UDPAddr) *node {
 	return &node{
+		dht:         dht,
 		id:          randID(),
 		addr:        addr,
 		isBootstrap: true,
