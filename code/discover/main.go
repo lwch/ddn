@@ -29,4 +29,5 @@ func main() {
 	var h dht.Hash
 	copy(h[:], hash)
 	net.Get(h)
+	<-make(chan int)
 }
