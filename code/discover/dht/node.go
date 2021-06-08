@@ -44,8 +44,7 @@ func (n *node) sendGet(hash Hash) {
 		logging.Error("send get_peers packet failed" + n.errInfo(err))
 		return
 	}
-	// n.dht.tx.add(tx, data.TypeGetPeers, hash, emptyHash)
-	_ = tx
+	n.dht.tx.add(tx, data.TypeGetPeers, hash, emptyHash)
 }
 
 func (n *node) errInfo(err error) string {

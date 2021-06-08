@@ -1,6 +1,7 @@
 package dht
 
 import (
+	"container/list"
 	"context"
 	"ddn/code/discover/data"
 	"encoding/hex"
@@ -10,22 +11,33 @@ import (
 	"github.com/lwch/logging"
 )
 
+type pkt struct {
+	data []byte
+	addr net.Addr
+}
+
 type DHT struct {
 	listen   *net.UDPConn
 	tb       *table
+	tx       *txMgr
 	minNodes int
 	local    Hash
+	chRead   chan pkt
 
 	// runtime
-	ctx    context.Context
-	cancel context.CancelFunc
+	ctx     context.Context
+	cancel  context.CancelFunc
+	getList list.List
+	next    *list.Element // next hash for get
 }
 
 func New(port uint16, minNodes, maxNodes int, addrs []net.UDPAddr) (*DHT, error) {
 	dht := &DHT{
 		tb:       newTable(8, maxNodes),
+		tx:       newTXMgr(30 * time.Second),
 		minNodes: minNodes,
 		local:    data.RandID(),
+		chRead:   make(chan pkt, 1000),
 	}
 	for _, addr := range addrs {
 		n := newBootstrapNode(dht, addr)
@@ -40,6 +52,7 @@ func New(port uint16, minNodes, maxNodes int, addrs []net.UDPAddr) (*DHT, error)
 	}
 	dht.ctx, dht.cancel = context.WithCancel(context.Background())
 	go dht.recv()
+	go dht.handler()
 	return dht, nil
 }
 
@@ -61,7 +74,34 @@ func (dht *DHT) recv() {
 		if err != nil {
 			continue
 		}
-		logging.Info("addr=%s\n%s", addr.String(), hex.Dump(buf[:n]))
+		data := make([]byte, n)
+		copy(data, buf[:n])
+		select {
+		case dht.chRead <- pkt{
+			data: data,
+			addr: addr,
+		}:
+		default:
+			logging.Info("drop packet")
+		}
+	}
+}
+
+func (dht *DHT) handler() {
+	tk := time.NewTicker(time.Second)
+	for {
+		select {
+		case pkt := <-dht.chRead:
+			dht.handleData(pkt.addr, pkt.data)
+		case <-tk.C:
+			if dht.tb.size < dht.minNodes {
+				dht.nextGet()
+			} else if dht.tx.size() == 0 {
+				dht.nextGet()
+			}
+		case <-dht.ctx.Done():
+			return
+		}
 	}
 }
 
@@ -70,4 +110,22 @@ func (dht *DHT) Get(hash Hash) {
 	for _, node := range nodes {
 		node.sendGet(hash)
 	}
+	n := dht.getList.PushBack(hash)
+	if dht.next == nil {
+		dht.next = n
+	}
+}
+
+func (dht *DHT) handleData(addr net.Addr, buf []byte) {
+	logging.Info("addr=%s\n%s", addr.String(), hex.Dump(buf))
+}
+
+func (dht *DHT) nextGet() {
+	next := dht.next.Next()
+	hash := dht.next.Value.(Hash)
+	nodes := dht.tb.neighbor(hash)
+	for _, node := range nodes {
+		node.sendGet(hash)
+	}
+	dht.next = next
 }
