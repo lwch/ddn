@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/lwch/bencode"
 	"github.com/lwch/logging"
 )
 
@@ -45,6 +46,48 @@ func (n *node) sendGet(hash Hash) {
 		return
 	}
 	n.dht.tx.add(tx, data.TypeGetPeers, hash, emptyHash)
+}
+
+func (n *node) onRecv(buf []byte) {
+	var hdr data.Hdr
+	err := bencode.Decode(buf, &hdr)
+	if err != nil {
+		// TODO: log
+		return
+	}
+	switch {
+	case hdr.IsRequest():
+		n.handleRequest(buf)
+	case hdr.IsResponse():
+		// n.handleResponse(buf, hdr.Transaction)
+	}
+}
+
+func (n *node) handleRequest(buf []byte) {
+	var req struct {
+		Data struct {
+			ID [20]byte `bencode:"id"`
+		} `bencode:"a"`
+	}
+	err := bencode.Decode(buf, &req)
+	if err != nil {
+		logging.Error("decode request failed" + n.errInfo(err))
+		return
+	}
+	if !n.id.equal(req.Data.ID) {
+		n.dht.tb.remove(n)
+		return
+	}
+	switch data.ParseReqType(buf) {
+	case data.TypePing:
+		n.onPing(buf)
+	case data.TypeFindNode:
+		n.onFindNode(buf)
+	case data.TypeGetPeers:
+		n.onGetPeers(buf)
+	case data.TypeAnnouncePeer:
+		n.onAnnouncePeer(buf)
+	}
 }
 
 func (n *node) errInfo(err error) string {

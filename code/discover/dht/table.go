@@ -115,10 +115,7 @@ func (bk *bucket) equalBits(id Hash) bool {
 	}
 	a := bk.prefix[bt] >> (8 - bit)
 	b := id[bt] >> (8 - bit)
-	if a^b > 0 {
-		return false
-	}
-	return true
+	return a^b <= 0
 }
 
 func (bk *bucket) getNodes() []*node {

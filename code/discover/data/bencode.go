@@ -1,5 +1,7 @@
 package data
 
+import "github.com/lwch/bencode"
+
 // ReqType request type
 type ReqType string
 
@@ -25,4 +27,23 @@ func newHdr(t string) Hdr {
 		Transaction: Rand(16),
 		Type:        t,
 	}
+}
+
+// IsRequest is request packet
+func (h Hdr) IsRequest() bool {
+	return h.Type == request
+}
+
+// IsResponse is response packet
+func (h Hdr) IsResponse() bool {
+	return h.Type == response
+}
+
+// ParseReqType parse request type
+func ParseReqType(data []byte) ReqType {
+	var t struct {
+		Type ReqType `bencode:"q"`
+	}
+	bencode.Decode(data, &t)
+	return t.Type
 }

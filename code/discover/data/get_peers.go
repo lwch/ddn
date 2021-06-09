@@ -18,6 +18,16 @@ type GetPeersRequest struct {
 	} `bencode:"a"`
 }
 
+// GetPeersNotFoundResponse get_peers response
+type GetPeersNotFoundResponse struct {
+	Hdr
+	Response struct {
+		ID    [20]byte `bencode:"id"`
+		Token string   `bencode:"token"`
+		Nodes string   `bencode:"nodes"`
+	} `bencode:"r"`
+}
+
 // GetPeers build get_peers request packet
 func GetPeers(id, hash [20]byte) ([]byte, string, error) {
 	var req GetPeersRequest
@@ -30,4 +40,19 @@ func GetPeers(id, hash [20]byte) ([]byte, string, error) {
 		return nil, "", err
 	}
 	return data, req.Hdr.Transaction, nil
+}
+
+// GetPeersNotFound build get_peers not found response packet
+func GetPeersNotFound(tx string, id [20]byte, token, nodes string) ([]byte, error) {
+	var rep GetPeersNotFoundResponse
+	rep.Transaction = tx
+	rep.Type = response
+	rep.Response.ID = id
+	rep.Response.Token = token
+	rep.Response.Nodes = nodes
+	data, err := bencode.Encode(rep)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }

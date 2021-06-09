@@ -3,7 +3,6 @@ package dht
 import (
 	"context"
 	"ddn/code/discover/data"
-	"encoding/hex"
 	"net"
 	"time"
 
@@ -113,7 +112,8 @@ func (dht *DHT) Get(hash Hash) {
 }
 
 func (dht *DHT) handleData(addr net.Addr, buf []byte) {
-	logging.Info("addr=%s\n%s", addr.String(), hex.Dump(buf))
+	node := dht.tb.findAddr(addr)
+	node.onRecv(buf)
 }
 
 func (dht *DHT) nextGet() {
