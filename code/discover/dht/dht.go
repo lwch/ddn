@@ -1,7 +1,6 @@
 package dht
 
 import (
-	"container/list"
 	"context"
 	"ddn/code/discover/data"
 	"encoding/hex"
@@ -25,10 +24,9 @@ type DHT struct {
 	chRead   chan pkt
 
 	// runtime
-	ctx     context.Context
-	cancel  context.CancelFunc
-	getList list.List
-	next    *list.Element // next hash for get
+	ctx    context.Context
+	cancel context.CancelFunc
+	list   *reqList
 }
 
 func New(port uint16, minNodes, maxNodes int, addrs []net.UDPAddr) (*DHT, error) {
@@ -38,6 +36,7 @@ func New(port uint16, minNodes, maxNodes int, addrs []net.UDPAddr) (*DHT, error)
 		minNodes: minNodes,
 		local:    data.RandID(),
 		chRead:   make(chan pkt, 1000),
+		list:     newReqList(),
 	}
 	for _, addr := range addrs {
 		n := newBootstrapNode(dht, addr)
@@ -110,10 +109,7 @@ func (dht *DHT) Get(hash Hash) {
 	for _, node := range nodes {
 		node.sendGet(hash)
 	}
-	n := dht.getList.PushBack(hash)
-	if dht.next == nil {
-		dht.next = n
-	}
+	dht.list.push(hash)
 }
 
 func (dht *DHT) handleData(addr net.Addr, buf []byte) {
@@ -121,11 +117,9 @@ func (dht *DHT) handleData(addr net.Addr, buf []byte) {
 }
 
 func (dht *DHT) nextGet() {
-	next := dht.next.Next()
-	hash := dht.next.Value.(Hash)
+	hash := dht.list.next()
 	nodes := dht.tb.neighbor(hash)
 	for _, node := range nodes {
 		node.sendGet(hash)
 	}
-	dht.next = next
 }
