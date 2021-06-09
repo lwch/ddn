@@ -109,6 +109,10 @@ func (dht *DHT) Get(hash Hash) {
 
 func (dht *DHT) handleData(addr net.Addr, buf []byte) {
 	node := dht.tb.findAddr(addr)
+	if node == nil {
+		// TODO
+		return
+	}
 	node.onRecv(buf)
 }
 
