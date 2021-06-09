@@ -34,6 +34,20 @@ func newBootstrapNode(dht *DHT, addr net.UDPAddr) *node {
 	}
 }
 
+func (n *node) sendDiscovery(id Hash) {
+	pkt, tx, err := data.FindReq(n.dht.local, id)
+	if err != nil {
+		logging.Error("build find_node packet failed" + n.errInfo(err))
+		return
+	}
+	_, err = n.dht.listen.WriteTo(pkt, &n.addr)
+	if err != nil {
+		logging.Error("send find_node packet failed" + n.errInfo(err))
+		return
+	}
+	n.dht.tx.add(tx, data.TypeFindNode, emptyHash, n.id)
+}
+
 func (n *node) sendGet(hash Hash) {
 	buf, tx, err := data.GetPeers(n.dht.local, hash)
 	if err != nil {
@@ -97,8 +111,8 @@ func (n *node) handleResponse(buf []byte, tx string) {
 	}
 	switch txr.t {
 	case data.TypePing:
-	// case data.TypeFindNode:
-	// 	n.onFindNodeResp(buf)
+	case data.TypeFindNode:
+		n.onFindNodeResp(buf)
 	case data.TypeGetPeers:
 		n.onGetPeersResp(buf, txr.hash)
 	}

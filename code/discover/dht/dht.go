@@ -15,12 +15,11 @@ type pkt struct {
 }
 
 type DHT struct {
-	listen   *net.UDPConn
-	tb       *table
-	tx       *txMgr
-	minNodes int
-	local    Hash
-	chRead   chan pkt
+	listen *net.UDPConn
+	tb     *table
+	tx     *txMgr
+	local  Hash
+	chRead chan pkt
 
 	// runtime
 	ctx    context.Context
@@ -28,14 +27,13 @@ type DHT struct {
 	list   *reqList
 }
 
-func New(port uint16, minNodes, maxNodes int, addrs []net.UDPAddr) (*DHT, error) {
+func New(port uint16, addrs []net.UDPAddr) (*DHT, error) {
 	dht := &DHT{
-		tb:       newTable(8, maxNodes),
-		tx:       newTXMgr(30 * time.Second),
-		minNodes: minNodes,
-		local:    data.RandID(),
-		chRead:   make(chan pkt, 1000),
-		list:     newReqList(),
+		tb:     newTable(8),
+		tx:     newTXMgr(30 * time.Second),
+		local:  data.RandID(),
+		chRead: make(chan pkt, 1000),
+		list:   newReqList(),
 	}
 	for _, addr := range addrs {
 		n := newBootstrapNode(dht, addr)
@@ -93,9 +91,8 @@ func (dht *DHT) handler() {
 		case pkt := <-dht.chRead:
 			dht.handleData(pkt.addr, pkt.data)
 		case <-tk.C:
-			if dht.tb.size < dht.minNodes {
-				dht.nextGet()
-			} else if dht.tx.size() == 0 {
+			if dht.tx.size() == 0 {
+				dht.discovery()
 				dht.nextGet()
 			}
 		case <-dht.ctx.Done():
@@ -127,4 +124,11 @@ func (dht *DHT) nextGet() {
 
 func (dht *DHT) Nodes() int {
 	return dht.tb.size
+}
+
+func (dht *DHT) discovery() {
+	nodes := dht.tb.neighbor(data.RandID())
+	for _, node := range nodes {
+		node.sendDiscovery(data.RandID())
+	}
 }

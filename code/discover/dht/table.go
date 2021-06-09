@@ -155,13 +155,12 @@ func bits(n int) int {
 	return size
 }
 
-func newTable(k, max int) *table {
+func newTable(k int) *table {
 	tb := &table{
 		root:      newBucket(emptyHash, 0),
 		addrIndex: make(map[string]*node),
 		k:         k,
 		maxBits:   len(emptyHash)*8 - bits(k),
-		maxSize:   max,
 	}
 	return tb
 }
