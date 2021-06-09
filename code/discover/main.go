@@ -4,7 +4,9 @@ import (
 	"ddn/code/discover/dht"
 	"encoding/hex"
 	"net"
+	"time"
 
+	"github.com/lwch/logging"
 	"github.com/lwch/runtime"
 )
 
@@ -29,5 +31,8 @@ func main() {
 	var h dht.Hash
 	copy(h[:], hash)
 	net.Get(h)
-	<-make(chan int)
+	for {
+		time.Sleep(time.Second)
+		logging.Info("%d nodes", net.Nodes())
+	}
 }

@@ -124,3 +124,7 @@ func (dht *DHT) nextGet() {
 		node.sendGet(hash)
 	}
 }
+
+func (dht *DHT) Nodes() int {
+	return dht.tb.size
+}
