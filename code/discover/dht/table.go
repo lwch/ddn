@@ -142,7 +142,6 @@ type table struct {
 	addrIndex map[string]*node
 	k         int
 	size      int
-	maxSize   int
 	maxBits   int
 }
 
@@ -166,9 +165,6 @@ func newTable(k int) *table {
 }
 
 func (t *table) add(n *node) bool {
-	if t.size >= t.maxSize {
-		return false
-	}
 	t.Lock()
 	defer t.Unlock()
 	next := t.root

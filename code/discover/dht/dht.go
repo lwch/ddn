@@ -94,7 +94,7 @@ func (dht *DHT) handler() {
 			if dht.tx.size() == 0 ||
 				dht.tb.size == 0 {
 				dht.discovery()
-				dht.nextGet()
+				dht.next()
 			}
 		case <-dht.ctx.Done():
 			return
@@ -115,7 +115,7 @@ func (dht *DHT) handleData(addr net.Addr, buf []byte) {
 	node.onRecv(buf)
 }
 
-func (dht *DHT) nextGet() {
+func (dht *DHT) next() {
 	hash := dht.list.next()
 	nodes := dht.tb.neighbor(hash)
 	for _, node := range nodes {
