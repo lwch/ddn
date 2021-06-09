@@ -18,6 +18,16 @@ type GetPeersRequest struct {
 	} `bencode:"a"`
 }
 
+// GetPeersResponse get_peers response
+type GetPeersResponse struct {
+	Hdr
+	Response struct {
+		ID     [20]byte `bencode:"id"`
+		Token  string   `bencode:"token"`
+		Values []string `bencode:"values"`
+	} `bencode:"r"`
+}
+
 // GetPeersNotFoundResponse get_peers response
 type GetPeersNotFoundResponse struct {
 	Hdr

@@ -55,6 +55,7 @@ func New(port uint16, minNodes, maxNodes int, addrs []net.UDPAddr) (*DHT, error)
 }
 
 func (dht *DHT) Close() {
+	dht.tx.close()
 	dht.listen.Close()
 	dht.cancel()
 }

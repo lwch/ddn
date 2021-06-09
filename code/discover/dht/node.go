@@ -59,7 +59,7 @@ func (n *node) onRecv(buf []byte) {
 	case hdr.IsRequest():
 		n.handleRequest(buf)
 	case hdr.IsResponse():
-		// n.handleResponse(buf, hdr.Transaction)
+		n.handleResponse(buf, hdr.Transaction)
 	}
 }
 
@@ -87,6 +87,20 @@ func (n *node) handleRequest(buf []byte) {
 		n.onGetPeers(buf)
 	case data.TypeAnnouncePeer:
 		n.onAnnouncePeer(buf)
+	}
+}
+
+func (n *node) handleResponse(buf []byte, tx string) {
+	txr := n.dht.tx.find(tx)
+	if txr == nil {
+		return
+	}
+	switch txr.t {
+	case data.TypePing:
+	// case data.TypeFindNode:
+	// 	n.onFindNodeResp(buf)
+	case data.TypeGetPeers:
+		n.onGetPeersResp(buf, txr.hash)
 	}
 }
 
