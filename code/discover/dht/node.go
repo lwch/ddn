@@ -45,7 +45,7 @@ func (n *node) sendDiscovery(id Hash) {
 		logging.Error("send find_node packet failed" + n.errInfo(err))
 		return
 	}
-	n.dht.tx.add(tx, data.TypeFindNode, emptyHash, n.id)
+	n.dht.tx.add(tx, data.TypeFindNode, emptyHash, id)
 }
 
 func (n *node) sendGet(hash Hash) {

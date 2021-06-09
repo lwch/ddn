@@ -28,6 +28,7 @@ func (n *node) onFindNodeResp(buf []byte) {
 		var id Hash
 		copy(id[:], resp.Response.Nodes[i:i+20])
 		if n.dht.tb.findID(id) != nil {
+			// TODO: update
 			continue
 		}
 		var ip [4]byte
