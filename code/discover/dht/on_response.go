@@ -27,10 +27,7 @@ func (n *node) onFindNodeResp(buf []byte) {
 	for i := 0; i < len(resp.Response.Nodes); i += 26 {
 		var id Hash
 		copy(id[:], resp.Response.Nodes[i:i+20])
-		if n.dht.tb.findID(id) != nil {
-			// TODO: update
-			continue
-		}
+
 		var ip [4]byte
 		err = binary.Read(strings.NewReader(resp.Response.Nodes[i+20:]), binary.BigEndian, &ip)
 		if err != nil {
@@ -42,11 +39,20 @@ func (n *node) onFindNodeResp(buf []byte) {
 		if port == 0 {
 			continue
 		}
+
+		node := n.dht.tb.findID(id)
+		if node != nil {
+			node.update(net.UDPAddr{
+				IP:   net.IP(ip[:]),
+				Port: int(port),
+			})
+			continue
+		}
 		addr := net.UDPAddr{
 			IP:   net.IP(ip[:]),
 			Port: int(port),
 		}
-		node := newNode(n.dht, id, addr)
+		node = newNode(n.dht, id, addr)
 		n.dht.tb.add(node)
 	}
 }

@@ -135,6 +135,8 @@ func (dht *DHT) handleData(addr net.Addr, buf []byte) {
 			if node == nil {
 				node = newNode(dht, req.Data.ID, *addr.(*net.UDPAddr))
 				dht.tb.add(node)
+			} else {
+				node.update(*addr.(*net.UDPAddr))
 			}
 		}
 	}

@@ -34,6 +34,10 @@ func newBootstrapNode(dht *DHT, addr net.UDPAddr) *node {
 	}
 }
 
+func (n *node) update(addr net.UDPAddr) {
+	n.addr = addr
+}
+
 func (n *node) sendGet(hash Hash) {
 	buf, tx, err := data.GetPeers(n.dht.local, hash)
 	if err != nil {
