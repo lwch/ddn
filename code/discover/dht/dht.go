@@ -3,6 +3,7 @@ package dht
 import (
 	"context"
 	"ddn/code/discover/data"
+	"math/rand"
 	"net"
 	"time"
 
@@ -91,7 +92,7 @@ func (dht *DHT) handler() {
 		case pkt := <-dht.chRead:
 			dht.handleData(pkt.addr, pkt.data)
 		case <-tk.C:
-			dht.discovery()
+			// dht.discovery()
 			dht.next()
 		case <-dht.ctx.Done():
 			return
@@ -118,7 +119,9 @@ func (dht *DHT) handleData(addr net.Addr, buf []byte) {
 
 func (dht *DHT) next() {
 	hash := dht.list.next()
-	nodes := dht.tb.neighbor(hash)
+	var id Hash
+	rand.Read(id[:])
+	nodes := dht.tb.neighbor(id)
 	for _, node := range nodes {
 		node.sendGet(hash)
 	}
