@@ -1,12 +1,14 @@
 package dht
 
 import (
+	"bytes"
 	"context"
 	"ddn/code/discover/data"
 	"math/rand"
 	"net"
 	"time"
 
+	"github.com/lwch/bencode"
 	"github.com/lwch/logging"
 )
 
@@ -92,7 +94,6 @@ func (dht *DHT) handler() {
 		case pkt := <-dht.chRead:
 			dht.handleData(pkt.addr, pkt.data)
 		case <-tk.C:
-			// dht.discovery()
 			dht.next()
 		case <-dht.ctx.Done():
 			return
@@ -111,7 +112,33 @@ func (dht *DHT) Get(hash Hash) {
 func (dht *DHT) handleData(addr net.Addr, buf []byte) {
 	node := dht.tb.findAddr(addr)
 	if node == nil {
-		// TODO
+		var hdr data.Hdr
+		err := bencode.Decode(buf, &hdr)
+		if err != nil {
+			return
+		}
+		if hdr.IsRequest() {
+			var req struct {
+				data.Hdr
+				Data struct {
+					ID [20]byte `bencode:"id"`
+				} `bencode:"a"`
+			}
+			err = bencode.Decode(buf, &req)
+			if err != nil {
+				return
+			}
+			if bytes.Equal(req.Data.ID[:], emptyHash[:]) {
+				return
+			}
+			node = dht.tb.findID(req.Data.ID)
+			if node == nil {
+				node = newNode(dht, req.Data.ID, *addr.(*net.UDPAddr))
+				dht.tb.add(node)
+			}
+		}
+	}
+	if node == nil {
 		return
 	}
 	node.onRecv(buf)
@@ -129,11 +156,4 @@ func (dht *DHT) next() {
 
 func (dht *DHT) Nodes() int {
 	return dht.tb.size
-}
-
-func (dht *DHT) discovery() {
-	nodes := dht.tb.neighbor(data.RandID())
-	for _, node := range nodes {
-		node.sendDiscovery(data.RandID())
-	}
 }
