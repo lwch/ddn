@@ -94,7 +94,9 @@ func (dht *DHT) handler() {
 		case pkt := <-dht.chRead:
 			dht.handleData(pkt.addr, pkt.data)
 		case <-tk.C:
-			dht.next()
+			if dht.tx.count == 0 {
+				dht.next()
+			}
 		case <-dht.ctx.Done():
 			return
 		}
