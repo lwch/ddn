@@ -103,5 +103,5 @@ func (n *node) onAnnouncePeer(buf []byte) {
 		logging.Error("send announce_peer packet failed" + n.errInfo(err))
 		return
 	}
-	logging.Info("announce: id=%s, addr=%s:%d", Hash(req.Data.Hash).String(), n.addr.IP.String(), port)
+	logging.Info("announce: info_hash=%s, peer_id=%s, addr=%s:%d", Hash(req.Data.Hash).String(), n.id.String(), n.addr.IP.String(), port)
 }
