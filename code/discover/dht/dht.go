@@ -146,11 +146,16 @@ func (dht *DHT) handleData(addr net.Addr, buf []byte) {
 
 func (dht *DHT) next() {
 	hash := dht.list.next()
-	var id Hash
-	rand.Read(id[:])
-	nodes := dht.tb.neighbor(id)
-	for _, node := range nodes {
-		node.sendGet(hash)
+	var cnt int
+	limit := dht.tb.size
+	for cnt < limit {
+		var id Hash
+		rand.Read(id[:])
+		nodes := dht.tb.neighbor(id)
+		for _, node := range nodes {
+			node.sendGet(hash)
+		}
+		cnt += len(nodes)
 	}
 }
 
