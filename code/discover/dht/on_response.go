@@ -80,6 +80,7 @@ func (n *node) onGetPeersResp(buf []byte, hash Hash) {
 	// n.dht.tk.add(found.Response.Token, hash, n.id)
 	for _, peer := range found.Response.Values {
 		if len(peer) != 6 {
+			logging.Error("invalid get_peers response value, peer length=%d", len(peer))
 			continue
 		}
 		var ip [4]byte
