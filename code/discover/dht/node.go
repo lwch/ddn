@@ -14,6 +14,7 @@ type node struct {
 	id          Hash
 	addr        net.UDPAddr
 	isBootstrap bool
+	cnt         int
 }
 
 func newNode(dht *DHT, id Hash, addr net.UDPAddr) *node {
@@ -50,6 +51,7 @@ func (n *node) sendGet(hash Hash) {
 		return
 	}
 	n.dht.tx.add(tx, data.TypeGetPeers, hash, emptyHash)
+	n.cnt++
 }
 
 func (n *node) onRecv(buf []byte) {

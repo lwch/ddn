@@ -31,6 +31,12 @@ func main() {
 	var h dht.Hash
 	copy(h[:], hash)
 	net.Get(h)
+	go func() {
+		for {
+			time.Sleep(time.Minute)
+			logging.Info("avg get: %.04f", net.AvgGet())
+		}
+	}()
 	for {
 		time.Sleep(time.Second)
 		logging.Info("%d nodes", net.Nodes())

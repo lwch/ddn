@@ -163,3 +163,13 @@ func (dht *DHT) next() {
 func (dht *DHT) Nodes() int {
 	return dht.tb.size
 }
+
+func (dht *DHT) AvgGet() float32 {
+	var total int
+	dht.tb.scan(func(nodes []*node) {
+		for _, node := range nodes {
+			total += node.cnt
+		}
+	})
+	return float32(total) / float32(dht.tb.size)
+}

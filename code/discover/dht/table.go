@@ -70,6 +70,23 @@ func (bk *bucket) search(id Hash) *bucket {
 	return bk.leaf[id.bit(bk.bits)].search(id)
 }
 
+func (bk *bucket) scan(cb func([]*node)) {
+	if bk.leaf[0] == nil && bk.leaf[1] == nil {
+		var nodes []*node
+		for n := bk.nodes.Front(); n != nil; n = n.Next() {
+			node := n.Value.(*node)
+			nodes = append(nodes, node)
+		}
+		cb(nodes)
+	}
+	if bk.leaf[0] != nil {
+		bk.leaf[0].scan(cb)
+	}
+	if bk.leaf[1] != nil {
+		bk.leaf[1].scan(cb)
+	}
+}
+
 func (bk *bucket) split(maxBits int) {
 	if bk.bits >= maxBits {
 		return
@@ -225,4 +242,10 @@ func (t *table) neighbor(id Hash) []*node {
 	bk := t.root.search(id)
 	t.RUnlock()
 	return bk.getNodes()
+}
+
+func (t *table) scan(cb func([]*node)) {
+	t.RLock()
+	t.root.scan(cb)
+	t.RUnlock()
 }
