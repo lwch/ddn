@@ -164,12 +164,23 @@ func (dht *DHT) Nodes() int {
 	return dht.tb.size
 }
 
-func (dht *DHT) AvgGet() float32 {
-	var total int
+// Counts calc average and std counts
+func (dht *DHT) Counts() (float32, float32) {
+	var total float32
 	dht.tb.scan(func(nodes []*node) {
 		for _, node := range nodes {
-			total += node.cnt
+			total += float32(node.cnt)
 		}
 	})
-	return float32(total) / float32(dht.tb.size)
+	var all float64
+	avg := float32(total) / float32(dht.tb.size)
+	dht.tb.scan(func(nodes []*node) {
+		for _, node := range nodes {
+			x := float32(node.cnt) - avg
+			x *= x
+			all += float64(x)
+		}
+	})
+	std := float32(all / float64(dht.tb.size))
+	return avg, std
 }

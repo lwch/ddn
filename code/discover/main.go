@@ -34,7 +34,8 @@ func main() {
 	go func() {
 		for {
 			time.Sleep(time.Minute)
-			logging.Info("avg get: %.04f", net.AvgGet())
+			avg, std := net.Counts()
+			logging.Info("avg get: avg=%.04f, std=%.04f", avg, std)
 		}
 	}()
 	for {
